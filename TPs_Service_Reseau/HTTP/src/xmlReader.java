@@ -4,7 +4,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.*;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,7 +18,7 @@ public class xmlReader {
     private String index;
     private String accept;
 
-    final static String  root = "Tps_Service_Reseau/HTTP/src/myweb.conf";
+    final static String  root = "myweb.conf";
 
     public xmlReader(){
         this.port="80";
@@ -27,7 +27,7 @@ public class xmlReader {
         this.accept="localhost";
     }
 
-    public static void main(String[] args) throws ParserConfigurationException, IOException, SAXException {
+    public xmlReader configurerReseau() throws ParserConfigurationException, IOException, SAXException {
         File file = new File(root);
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
@@ -36,24 +36,21 @@ public class xmlReader {
         xmlReader xmlReader = new xmlReader();
 
         document.getDocumentElement().normalize();
-        System.out.println("Root Element :" + document.getDocumentElement().getNodeName() + "\n");
         NodeList nList = document.getElementsByTagName("webconf");
-        System.out.println("----------------------------");
         for (int temp = 0; temp < nList.getLength(); temp++) {
             Node nNode = nList.item(temp);
-            System.out.println("\nCurrent Element : " + nNode.getNodeName());
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
                 Element eElement = (Element) nNode;
                 xmlReader.setPort(eElement.getElementsByTagName("port").item(0).getTextContent());
-                System.out.println("Port: " + xmlReader.getPort());
+                System.out.println(port);
                 xmlReader.setRacine(eElement.getElementsByTagName("root").item(0).getTextContent());
-                System.out.println("Root: " + xmlReader.getRacine());
+                System.out.println(racine);
                 xmlReader.setIndex(eElement.getElementsByTagName("index").item(0).getTextContent());
-                System.out.println("Index: " + xmlReader.getIndex());
+                System.out.println(index);
                 xmlReader.setAccept(eElement.getElementsByTagName("accept").item(0).getTextContent());
-                System.out.println("Accept: " + xmlReader.getAccept());
             }
         }
+        return xmlReader;
     }
 
     public String getPort() {

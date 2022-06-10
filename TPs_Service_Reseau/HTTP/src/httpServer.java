@@ -1,3 +1,6 @@
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.*;
 import java.sql.SQLOutput;
@@ -6,7 +9,7 @@ import java.util.Scanner;
 
 public class httpServer {
 
-    final static String CHEMIN="./doc/";
+    static String CHEMIN;
     /**
      * Etape 1 : lire le numéro de port (args)
      * Etape 2 : créer un serverSocket
@@ -53,10 +56,16 @@ public class httpServer {
         }
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
+
+        xmlReader config = new xmlReader();
+        config = config.configurerReseau();
+        CHEMIN = config.getRacine();
+
+
         int numPort = 0;
         try{
-            numPort = Integer.parseInt(args[0]);
+            numPort = Integer.parseInt(config.getPort());
         }catch (NumberFormatException nfe){
             System.out.println("numero de port incorrect");
             System.exit(1);
