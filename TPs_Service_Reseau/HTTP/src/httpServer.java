@@ -56,6 +56,7 @@ public class httpServer {
         }
     }
 
+
     public static void main(String[] args) throws IOException, ParserConfigurationException, SAXException {
 
         xmlReader config = new xmlReader();
@@ -81,59 +82,74 @@ public class httpServer {
         }
 
 
-        while (true){
-            Socket s = sSocket.accept();
+            while (true) {
+                Socket s = sSocket.accept();
+                System.out.println(s.getInetAddress().getHostName());
+                InputStream inputStream = null;
+                try {
+                    inputStream = s.getInputStream();
+                } catch (IOException ioe) {
+                    System.out.println("aucun flux entrant pour cette socket");
+                    System.exit(1);
+                }
 
-            InputStream inputStream =null;
-            try {
-                inputStream = s.getInputStream();
-            }catch (IOException ioe){
-                System.out.println("aucun flux entrant pour cette socket");
-                System.exit(1);
-            }
 
-            InputStreamReader inputStreamReader = null;
-            inputStreamReader = new InputStreamReader(inputStream);
 
-            BufferedReader bf = null;
-            bf = new BufferedReader(inputStreamReader);
+                    InputStreamReader inputStreamReader = null;
+                    inputStreamReader = new InputStreamReader(inputStream);
 
-            DataOutputStream dataOutputStream = null;
-            try{
-                dataOutputStream = new DataOutputStream(s.getOutputStream());
-            }catch (IOException ioe){
-                System.out.println("erreur InOut");
-                System.exit(1);
-            }
+                    BufferedReader bf = null;
+                    bf = new BufferedReader(inputStreamReader);
 
-            String ligne1 = bf.readLine();
-            System.out.println(ligne1);
-            while (true){
-                String l = bf.readLine();
-                System.out.println(l);
-                if(l.equals("")){
-                    break;
+                    DataOutputStream dataOutputStream = null;
+                    try {
+                        dataOutputStream = new DataOutputStream(s.getOutputStream());
+                    } catch (IOException ioe) {
+                        System.out.println("erreur InOut");
+                        System.exit(1);
+                    }
+                if (config.IPRejected(s.getInetAddress().getCanonicalHostName())) {
+                    System.out.println("IP rejetée");
+                    s.close();
+                    bf.close();
+                    dataOutputStream.close();
+                } else {
+
+                    String ligne1 = bf.readLine();
+                    System.out.println(ligne1);
+                    while (true) {
+                        String l = bf.readLine();
+                        System.out.println(l);
+                        if (l.equals("")) {
+                            break;
+                        }
+                    }
+
+                    byte[] fichier = new byte[0];
+                    boolean index = Boolean.parseBoolean(config.getIndex());
+                    String[] ligneStockee = ligne1.split(" ");
+                    String Ressource = ligneStockee[1];
+                    if (ligneStockee[0].equals("GET")) {
+                        if (index && (Ressource.equals("/"))) {
+                            fichier = lireFichier(CHEMIN + "/index.html");
+                        } else {
+                            fichier = lireFichier(CHEMIN + Ressource);
+                        }
+                    }
+                    if (fichier != null) {
+                        dataOutputStream.write("HTTP1.1 200 OK\r\n".getBytes());
+                        dataOutputStream.write("\r\n".getBytes());
+                        dataOutputStream.write(fichier);
+                    } else {
+                        fichier = lireFichier("src/Erreurs/Error_404.html");
+                        dataOutputStream.write("HTTP1.1 404 NotFound\r\n".getBytes());
+                        dataOutputStream.write("\r\n".getBytes());
+                        dataOutputStream.write(fichier);
+                    }
+                    s.close();
+                    bf.close();
+                    dataOutputStream.close();
                 }
             }
-
-            String[] ligneStockee = ligne1.split(" ");
-            String Ressource = ligneStockee[1];
-
-            byte[] fichier = lireFichier(CHEMIN+Ressource);
-
-            if(fichier != null){
-                dataOutputStream.write("HTTP1.1 200 OK\r\n".getBytes());
-                dataOutputStream.write("\r\n".getBytes());
-                dataOutputStream.write(fichier);
-            }else{
-                dataOutputStream.write("HTTP1.1 404 NotFound\r\n".getBytes());
-                dataOutputStream.write("\r\n".getBytes());
-            }
-
-            s.close();
-            bf.close();
-            dataOutputStream.close();
-
-        }
     }
 }

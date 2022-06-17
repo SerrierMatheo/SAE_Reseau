@@ -17,14 +17,16 @@ public class xmlReader {
     private String racine;
     private String index;
     private String accept;
+    public String reject;
 
-    final static String  root = "myweb.conf";
+    final static String  root = "TPs_Service_Reseau/HTTP/src/myweb.conf";
 
     public xmlReader(){
         this.port="80";
         this.racine="./doc/";
         this.index="true";
-        this.accept="localhost";
+        this.accept=null;
+        this.reject=null;
     }
 
     public xmlReader configurerReseau() throws ParserConfigurationException, IOException, SAXException {
@@ -48,10 +50,45 @@ public class xmlReader {
                 xmlReader.setIndex(eElement.getElementsByTagName("index").item(0).getTextContent());
                 System.out.println(index);
                 xmlReader.setAccept(eElement.getElementsByTagName("accept").item(0).getTextContent());
+                xmlReader.setReject(eElement.getElementsByTagName("reject").item(0).getTextContent());
             }
         }
         return xmlReader;
     }
+
+    public boolean IPRejected(String IP){
+        boolean acces = false;
+        if(this.reject != null);
+        String[] recupMasqueReseau = this.reject.split("/");
+        int bitMasque = Integer.parseInt(recupMasqueReseau[1]);
+        System.out.println(bitMasque);
+        String NetworkRejected = recupMasqueReseau[0];
+        System.out.println(NetworkRejected);
+        String[] bitIP = IP.split("\\.");
+        String[] bitReseau = NetworkRejected.split("\\.");
+
+        switch (bitMasque){
+            case 8:
+                if(bitIP[0].equals(bitReseau[0])){
+                    acces = true;
+                }
+                break;
+            case 16 :
+                if(bitIP[0].equals(bitReseau[0]) && bitIP[1].equals(bitReseau[1])){
+                    acces = true;
+                }
+                break;
+            case 24:
+                if(bitIP[0].equals(bitReseau[0]) && bitIP[1].equals(bitReseau[1]) && bitIP[2].equals(bitReseau[2])){
+                    acces = true;
+                    System.out.println(bitIP[0]);
+                }
+                break;
+        }
+        return acces;
+    }
+
+
 
     public String getPort() {
         return port;
@@ -84,5 +121,15 @@ public class xmlReader {
     public void setAccept(String accept) {
         this.accept = accept;
     }
+
+    public String getReject() {
+        return reject;
+    }
+
+    public void setReject(String reject) {
+        this.reject = reject;
+    }
+
+
 }
 
